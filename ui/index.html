@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>YT Tracks Generator</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+        integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+</head>
+
+<body ng-app="YTApp">
+    <div ng-controller="YTController" class="container mt-5">
+        <h2 class="text-center">🤖 YT TRACKS GENERATOR 🤖</h2>
+        <div class="row mt-5 text-center">
+            <div class="col-12">
+                <div class="alert alert-danger" role="alert" ng-show="error">{{error}}</div>
+                <input type="text" class="form-control"
+                    placeholder="Youtube URL - https://www.youtube.com/watch?v=hLNKujDVe0U" ng-model="ytUrl">
+                <textarea class="form-control" placeholder="{{timestampPlaceholder}}" rows="13"
+                    ng-model="ytTracks"></textarea>
+                <button class="btn btn-info" type="button" ng-class="generating?'disabled':''"
+                    ng-click="ytUrl && convertToTracks(ytUrl, ytTracks)">
+                    <span ng-hide="generating"><i class="fa fa-send" aria-hidden="true"></i> Submit</span>
+                    <span ng-show="generating"><i class="fa fa-cog fa-spin" aria-hidden="true"></i> Generating</span>
+                </button>
+                <a role="button" class="btn btn-success" ng-class="!generated?'disabled':''" ng-href="{{generated}}"
+                    download>
+                    <i class="fa fa-download" aria-hidden="true"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        let YTApp = angular.module("YTApp", []);
+        YTApp.controller('YTController', function ($scope, $http) {
+            $scope.generating = false;
+            $scope.generated = false;
+            $scope.error = '';
+            const timestampformat = `/* For videos not having auto tagged/marked playlist timestamps,\nmanually add timestamp in exact format like below to split */ \n\n`
+            $scope.timestampPlaceholder = `${timestampformat}Aahaa - 00:00\nMudhal Darisanam - 05:01\nFeel Song - 07:53\nInba Visai - 10:55\nPudhu Vidha Anubavam - 13:51\nSemmaan Magalai - 18:03\nVaazha Vaa - 22:19\nVaazhl Theme - 27:38\nNaan - 32:35\n`;
+            $scope.convertToTracks = (url, tracks) => {
+                $scope.error = '';
+                $scope.generating = true;
+                $http.post('/convert', { url, tracks })
+                    .then(({ data }) => {
+                        $scope.generating = false;
+                        $scope.generated = data.downloadUrl;
+                    })
+                    .catch(({ data: { message } }) => {
+                        $scope.generated = false;
+                        $scope.error = `${message ? message : 'Error generating tracks !!'}`;
+                    })
+                    .finally(() => { $scope.generating = false; });
+            };
+        });
+    </script>
+</body>
+
+</html>

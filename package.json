@@ -1,0 +1,19 @@
+{
+  "name": "youtube-mp3-splitter",
+  "version": "1.0.0",
+  "description": "Minimal app to generate splitted mp3 audio tracks from Youtube",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dilipan Somasundaram",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ffmpeg-static": "^4.4.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "ytdl-core": "^4.8.3",
+    "zip-dir": "^2.0.0"
+  }
+}
