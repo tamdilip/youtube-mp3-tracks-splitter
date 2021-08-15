@@ -114,13 +114,17 @@ wss.on('connection', function connection(ws) {
     console.log('App connected with socket...');
 
     ws.on('message', async function incoming(message) {
-        console.log('Download request received !!');
         try {
             const { url, tracks } = JSON.parse(message);
-            console.log(url, tracks);
-            const zippedPath = await generateTracks(url, tracks);
-            console.log('Tracks generated successfully !!');
-            ws.send(JSON.stringify({ downloadUrl: `./${DOWNLOAD_ROUTE}/${zippedPath}` }));
+            if (url || tracks) {
+                console.log(`Download request received: `, url, tracks);
+                const zippedPath = await generateTracks(url, tracks);
+                console.log('Tracks generated successfully !!');
+                ws.send(JSON.stringify({ downloadUrl: `./${DOWNLOAD_ROUTE}/${zippedPath}` }));
+            } else {
+                console.log('Health check request received !!');
+                ws.send(JSON.stringify({ health: 'server alive' }));
+            }
         } catch (error) {
             console.log('/convert :: ', error.message);
             ws.send(JSON.stringify({ message: error.message }));
@@ -128,23 +132,4 @@ wss.on('connection', function connection(ws) {
     });
 });
 
-const healthURL = 'yt-mp3-split.herokuapp.com';
-const healthLOOP = 20000;
-const startKeepAlive = () => {
-    setInterval(() => {
-        http.get({ host: healthURL }, (res) => {
-            res.on('data', () => {
-                try {
-                    console.log('App is alive !!', new Date());
-                } catch (err) {
-                    console.log(err.message);
-                }
-            });
-        }).on('error', (err) => {
-            console.log('Health check error: ' + err.message);
-        });
-    }, healthLOOP);
-}
-
-//startKeepAlive();
 server.listen(APP_PORT, () => console.log(`http://localhost:${APP_PORT}`));

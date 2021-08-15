@@ -35,8 +35,8 @@
         </div>
     </div>
     <script type="text/javascript">
-        let YTApp = angular.module("YTApp", []);
-        YTApp.controller('YTController', function ($scope, $http) {
+        let YTApp = angular.module('YTApp', []);
+        YTApp.controller('YTController', function ($scope, $http, $interval) {
             $scope.generating = false;
             $scope.generated = false;
             $scope.error = '';
@@ -44,27 +44,34 @@
             $scope.timestampPlaceholder = `${timestampformat}Aahaa - 00:00\nMudhal Darisanam - 05:01\nFeel Song - 07:53\nInba Visai - 10:55\nPudhu Vidha Anubavam - 13:51\nSemmaan Magalai - 18:03\nVaazha Vaa - 22:19\nVaazhl Theme - 27:38\nNaan - 32:35\n`;
 
             let ws = new WebSocket(location.origin.replace(/^http/, 'ws'));
-            ws.onopen = () => console.log("Connected to report socket...");
+            ws.onopen = () => console.log('Connected to app socket...');
             ws.onmessage = (evt) => {
                 let { data } = evt;
                 data = JSON.parse(data);
-                $scope.generating = false;
 
-                if (data.message)
+                if (data.message) {
+                    $scope.generating = false;
                     $scope.error = `${data.message ? data.message : 'Error generating tracks !!'}`;
-                else
+                }
+                else if (data.downloadUrl) {
+                    $scope.generating = false;
                     $scope.generated = data.downloadUrl;
+                }
 
                 $scope.$apply();
-                console.log("Message is received...");
+                console.log('Message is received...');
             };
-            ws.onclose = () => console.log("Connection is closed...");
+            ws.onclose = () => console.log('Connection is closed...');
 
             $scope.convertToTracks = (url, tracks) => {
                 $scope.error = '';
                 $scope.generating = true;
                 ws.send(JSON.stringify({ url, tracks }));
             };
+
+            $interval(() => {
+                ws.send(JSON.stringify({ health: 'client heartbeat' }));
+            }, 10000);
         });
     </script>
 </body>
