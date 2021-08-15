@@ -6,7 +6,7 @@ const fs = require('fs');
 const zipdir = require('zip-dir');
 const app = express();
 
-const APP_PORT = `5000`;
+const APP_PORT = process.env.PORT || `5000`;
 const DOWNLOAD_ROUTE = `download`;
 const OUT_DIRECTORY = `./out`;
 const OUT_FORMAT = `mp3`;
