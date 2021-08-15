@@ -146,5 +146,5 @@ const startKeepAlive = () => {
     }, healthLOOP);
 }
 
-startKeepAlive();
+//startKeepAlive();
 server.listen(APP_PORT, () => console.log(`http://localhost:${APP_PORT}`));
