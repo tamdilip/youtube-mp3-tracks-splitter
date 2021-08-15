@@ -4,6 +4,7 @@ const express = require('express');
 const ytdl = require('ytdl-core');
 const zipdir = require('zip-dir');
 const WebSocket = require('ws');
+const http = require('http');
 const fs = require('fs');
 
 const APP_PORT = process.env.PORT || `5000`;
@@ -16,7 +17,7 @@ app.use('/', express.static('ui'));
 app.use(`/${DOWNLOAD_ROUTE}`, express.static('out'));
 
 const WSServer = WebSocket.Server;
-const server = require('http').createServer();
+const server = http.createServer();
 const wss = new WSServer({
     server: server,
     perMessageDeflate: false
@@ -110,7 +111,7 @@ const generateTracks = async (source, tracks) => {
 
 
 wss.on('connection', function connection(ws) {
-    console.log("App connected with socket...");
+    console.log('App connected with socket...');
 
     ws.on('message', async function incoming(message) {
         console.log('Download request received !!');
@@ -127,5 +128,23 @@ wss.on('connection', function connection(ws) {
     });
 });
 
+const healthURL = 'yt-mp3-split.herokuapp.com';
+const healthLOOP = 20000;
+const startKeepAlive = () => {
+    setInterval(() => {
+        http.get({ host: healthURL }, (res) => {
+            res.on('data', () => {
+                try {
+                    console.log('App is alive !!', new Date());
+                } catch (err) {
+                    console.log(err.message);
+                }
+            });
+        }).on('error', (err) => {
+            console.log('Health check error: ' + err.message);
+        });
+    }, healthLOOP);
+}
 
+startKeepAlive();
 server.listen(APP_PORT, () => console.log(`http://localhost:${APP_PORT}`));
