@@ -114,13 +114,17 @@ wss.on('connection', function connection(ws) {
     console.log('App connected with socket...');
 
     ws.on('message', async function incoming(message) {
-        console.log('Download request received !!');
         try {
             const { url, tracks } = JSON.parse(message);
-            console.log(url, tracks);
-            const zippedPath = await generateTracks(url, tracks);
-            console.log('Tracks generated successfully !!');
-            ws.send(JSON.stringify({ downloadUrl: `./${DOWNLOAD_ROUTE}/${zippedPath}` }));
+            if (url || tracks) {
+                console.log(`Download request received: `, url, tracks);
+                const zippedPath = await generateTracks(url, tracks);
+                console.log('Tracks generated successfully !!');
+                ws.send(JSON.stringify({ downloadUrl: `./${DOWNLOAD_ROUTE}/${zippedPath}` }));
+            } else {
+                console.log('Health check request received !!');
+                ws.send(JSON.stringify({ health: 'server alive' }));
+            }
         } catch (error) {
             console.log('/convert :: ', error.message);
             ws.send(JSON.stringify({ message: error.message }));
