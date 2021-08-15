@@ -43,7 +43,7 @@
             const timestampformat = `/* For videos not having auto tagged/marked playlist timestamps,\nmanually add timestamp in exact format like below to split */ \n\n`
             $scope.timestampPlaceholder = `${timestampformat}Aahaa - 00:00\nMudhal Darisanam - 05:01\nFeel Song - 07:53\nInba Visai - 10:55\nPudhu Vidha Anubavam - 13:51\nSemmaan Magalai - 18:03\nVaazha Vaa - 22:19\nVaazhl Theme - 27:38\nNaan - 32:35\n`;
 
-            let ws = new WebSocket(`ws://${location.host}`);
+            let ws = new WebSocket(location.origin.replace(/^http/, 'ws'));
             ws.onopen = () => console.log("Connected to report socket...");
             ws.onmessage = (evt) => {
                 let { data } = evt;
