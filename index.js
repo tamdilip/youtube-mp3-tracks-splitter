@@ -1,9 +1,11 @@
-const ffmpeg = require('fluent-ffmpeg');
 const ffmpeg_static = require('ffmpeg-static');
-const ytdl = require('ytdl-core');
+const timeout = require('connect-timeout');
+const ffmpeg = require('fluent-ffmpeg');
 const express = require('express');
-const fs = require('fs');
+const ytdl = require('ytdl-core');
 const zipdir = require('zip-dir');
+const fs = require('fs');
+
 const app = express();
 
 const APP_PORT = process.env.PORT || `5000`;
@@ -63,7 +65,7 @@ const splitAudio = (startTime, duration, title, videoId) => new Promise((resolve
         .setFfmpegPath(ffmpeg_static)
         .setStartTime(startTime)
         .duration(duration)
-        .saveToFile(`${outDir}/${title}.mp3`)
+        .saveToFile(`${outDir}/${title.replace(/[^a-z0-9_-]/gi, '_')}.mp3`)
         .on('end', () => resolve(outDir))
         .on('error', (err) => {
             console.log('splitAudio', err);
@@ -94,6 +96,7 @@ const generateTracks = async (source, tracks) => {
     return `${videoId}/splitted.zip`;
 };
 
+app.use(timeout(process.env.EXPRESS_TIMEOUT || 120000));
 app.use(express.json());
 app.use('/', express.static('ui'));
 app.use(`/${DOWNLOAD_ROUTE}`, express.static('out'));
