@@ -96,7 +96,12 @@ const generateTracks = async (source, tracks) => {
     return `${videoId}/splitted.zip`;
 };
 
+const haltOnTimedout = (req, res, next) => {
+    if (!req.timedout) next();
+};
+
 app.use(timeout(process.env.EXPRESS_TIMEOUT || 120000));
+app.use(haltOnTimedout);
 app.use(express.json());
 app.use('/', express.static('ui'));
 app.use(`/${DOWNLOAD_ROUTE}`, express.static('out'));
