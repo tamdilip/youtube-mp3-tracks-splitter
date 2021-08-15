@@ -10,10 +10,10 @@
   "author": "Dilipan Somasundaram",
   "license": "ISC",
   "dependencies": {
-    "connect-timeout": "^1.9.0",
     "express": "^4.17.1",
     "ffmpeg-static": "^4.4.0",
     "fluent-ffmpeg": "^2.1.2",
+    "ws": "^8.1.0",
     "ytdl-core": "^4.8.3",
     "zip-dir": "^2.0.0"
   }
