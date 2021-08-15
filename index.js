@@ -1,17 +1,28 @@
 const ffmpeg_static = require('ffmpeg-static');
-const timeout = require('connect-timeout');
 const ffmpeg = require('fluent-ffmpeg');
 const express = require('express');
 const ytdl = require('ytdl-core');
 const zipdir = require('zip-dir');
+const WebSocket = require('ws');
 const fs = require('fs');
-
-const app = express();
 
 const APP_PORT = process.env.PORT || `5000`;
 const DOWNLOAD_ROUTE = `download`;
 const OUT_DIRECTORY = `./out`;
 const OUT_FORMAT = `mp3`;
+
+const app = express();
+app.use('/', express.static('ui'));
+app.use(`/${DOWNLOAD_ROUTE}`, express.static('out'));
+
+const WSServer = WebSocket.Server;
+const server = require('http').createServer();
+const wss = new WSServer({
+    server: server,
+    perMessageDeflate: false
+});
+server.on('request', app);
+
 const localDir = (dir) => {
     !fs.existsSync(OUT_DIRECTORY) && fs.mkdirSync(OUT_DIRECTORY);
     !fs.existsSync(dir) && fs.mkdirSync(dir);
@@ -96,27 +107,25 @@ const generateTracks = async (source, tracks) => {
     return `${videoId}/splitted.zip`;
 };
 
-const haltOnTimedout = (req, res, next) => {
-    if (!req.timedout) next();
-};
 
-app.use(timeout(process.env.EXPRESS_TIMEOUT || 120000));
-app.use(haltOnTimedout);
-app.use(express.json());
-app.use('/', express.static('ui'));
-app.use(`/${DOWNLOAD_ROUTE}`, express.static('out'));
 
-app.post('/convert', async (req, res) => {
-    try {
-        const { body: { url, tracks } } = req;
-        console.log(url, tracks);
-        const zippedPath = await generateTracks(url, tracks);
-        console.log('Tracks generated successfully !!');
-        res.send({ downloadUrl: `./${DOWNLOAD_ROUTE}/${zippedPath}` });
-    } catch (error) {
-        console.log('/convert :: ', error.message);
-        res.status(500).send(JSON.stringify({ message: error.message }));
-    }
+wss.on('connection', function connection(ws) {
+    console.log("App connected with socket...");
+
+    ws.on('message', async function incoming(message) {
+        console.log('Download request received !!');
+        try {
+            const { url, tracks } = JSON.parse(message);
+            console.log(url, tracks);
+            const zippedPath = await generateTracks(url, tracks);
+            console.log('Tracks generated successfully !!');
+            ws.send(JSON.stringify({ downloadUrl: `./${DOWNLOAD_ROUTE}/${zippedPath}` }));
+        } catch (error) {
+            console.log('/convert :: ', error.message);
+            ws.send(JSON.stringify({ message: error.message }));
+        }
+    });
 });
 
-app.listen(APP_PORT, () => console.log(`http://localhost:${APP_PORT}`));
+
+server.listen(APP_PORT, () => console.log(`http://localhost:${APP_PORT}`));

@@ -42,19 +42,28 @@
             $scope.error = '';
             const timestampformat = `/* For videos not having auto tagged/marked playlist timestamps,\nmanually add timestamp in exact format like below to split */ \n\n`
             $scope.timestampPlaceholder = `${timestampformat}Aahaa - 00:00\nMudhal Darisanam - 05:01\nFeel Song - 07:53\nInba Visai - 10:55\nPudhu Vidha Anubavam - 13:51\nSemmaan Magalai - 18:03\nVaazha Vaa - 22:19\nVaazhl Theme - 27:38\nNaan - 32:35\n`;
+
+            let ws = new WebSocket(`ws://${location.host}`);
+            ws.onopen = () => console.log("Connected to report socket...");
+            ws.onmessage = (evt) => {
+                let { data } = evt;
+                data = JSON.parse(data);
+                $scope.generating = false;
+
+                if (data.message)
+                    $scope.error = `${data.message ? data.message : 'Error generating tracks !!'}`;
+                else
+                    $scope.generated = data.downloadUrl;
+
+                $scope.$apply();
+                console.log("Message is received...");
+            };
+            ws.onclose = () => console.log("Connection is closed...");
+
             $scope.convertToTracks = (url, tracks) => {
                 $scope.error = '';
                 $scope.generating = true;
-                $http.post('/convert', { url, tracks })
-                    .then(({ data }) => {
-                        $scope.generating = false;
-                        $scope.generated = data.downloadUrl;
-                    })
-                    .catch(({ data: { message } }) => {
-                        $scope.generated = false;
-                        $scope.error = `${message ? message : 'Error generating tracks !!'}`;
-                    })
-                    .finally(() => { $scope.generating = false; });
+                ws.send(JSON.stringify({ url, tracks }));
             };
         });
     </script>
