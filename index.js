@@ -132,23 +132,4 @@ wss.on('connection', function connection(ws) {
     });
 });
 
-const healthURL = 'yt-mp3-split.herokuapp.com';
-const healthLOOP = 20000;
-const startKeepAlive = () => {
-    setInterval(() => {
-        http.get({ host: healthURL }, (res) => {
-            res.on('data', () => {
-                try {
-                    console.log('App is alive !!', new Date());
-                } catch (err) {
-                    console.log(err.message);
-                }
-            });
-        }).on('error', (err) => {
-            console.log('Health check error: ' + err.message);
-        });
-    }, healthLOOP);
-}
-
-//startKeepAlive();
 server.listen(APP_PORT, () => console.log(`http://localhost:${APP_PORT}`));

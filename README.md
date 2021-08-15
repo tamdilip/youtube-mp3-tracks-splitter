@@ -1,4 +1,6 @@
 # 🤖 youtube-mp3-tracks-splitter
+
+[![Live demo](https://img.shields.io/badge/Heroku-Live%20demo-violet?style=flat-square&logo=heroku&logoColor=violet)](https://yt-mp3-split.herokuapp.com/)
 [![Open in CodeSandbox](https://img.shields.io/badge/CodeSandbox-Ready--to--Code-green?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/tamdilip/youtube-mp3-tracks-splitter)
 
 Minimal app to generate mp3 audio tracks split based on the timestamps from Youtube.
