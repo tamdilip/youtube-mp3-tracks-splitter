@@ -60,7 +60,7 @@ const getVideoInfo = (source) => ytdl.getInfo(source)
 
 const downloadVideoAndConvertToMp3 = (source, videoId) => new Promise((resolve, reject) => {
     let outDir = localDir(`${OUT_DIRECTORY}/${videoId}`);
-    ffmpeg(ytdl(source))
+    ffmpeg(ytdl(source, { quality: 'highestaudio' }))
         .setFfmpegPath(ffmpeg_static)
         .toFormat(OUT_FORMAT)
         .saveToFile(`${outDir}/complete.${OUT_FORMAT}`)
